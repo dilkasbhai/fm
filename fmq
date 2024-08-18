@@ -1,0 +1,157 @@
+<?php
+// Handle form submission and save data to XML
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $message = $_POST['message'];
+
+    $xml = new DOMDocument('1.0', 'UTF-8');
+    $xml->formatOutput = true;
+
+    if (file_exists('messages.xml')) {
+        $xml->load('messages.xml');
+        $root = $xml->getElementsByTagName('messages')->item(0);
+    } else {
+        $root = $xml->createElement('messages');
+        $xml->appendChild($root);
+    }
+
+    $messageNode = $xml->createElement('message');
+    $root->appendChild($messageNode);
+
+    $nameNode = $xml->createElement('name', htmlspecialchars($name));
+    $emailNode = $xml->createElement('email', htmlspecialchars($email));
+    $messageTextNode = $xml->createElement('content', htmlspecialchars($message));
+
+    $messageNode->appendChild($nameNode);
+    $messageNode->appendChild($emailNode);
+    $messageNode->appendChild($messageTextNode);
+
+    $xml->save('messages.xml');
+
+    $success = "Your message has been sent!";
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Contact Us</h1>
+    
+    <?php if (isset($success)): ?>
+        <div class="success"><?= $success ?></div>
+    <?php endif; ?>
+
+    <form id="contactForm" method="POST" action="">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="5" required></textarea>
+
+        <button type="submit">Send Message</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('contactForm').addEventListener('submit', function (event) {
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const message = document.getElementById('message').value;
+
+        if (name.trim() === '' || email.trim() === '' || message.trim() === '') {
+            alert('Please fill in all fields.');
+            event.preventDefault();
+        } else if (!validateEmail(email)) {
+            alert('Please enter a valid email address.');
+            event.preventDefault();
+        }
+    });
+
+    function validateEmail(email) {
+        const re = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+        return re.test(String(email).toLowerCase());
+    }
+</script>
+
+</body>
+</html>
